@@ -1,22 +1,25 @@
 'use client'
 
 import { PUBLIC_PATHS } from '@/constants/publicPaths';
-import { loginUser, authWithGoogle, logoutUser } from '@/services/authService';
-import { getUserFile } from '@/services/mediaService';
-import { LoginFormData } from '@/types/forms';
-import { User } from '@/types/user';
+import { User } from '@/models/user';
+import { LoginData } from '@/modules/auth/schemas/loginSchema';
+import { loginUser, authWithGoogle, logoutUser } from '@/services/auth/authService';
+import { getUserFile } from '@/services/media/mediaService';
+
 import { useRouter, usePathname } from 'next/navigation';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (data: LoginFormData & { recaptchaToken?: string }) => Promise<void>;
+  login: (data: LoginData & { recaptchaToken?: string }) => Promise<void>;
   logout: () => void;
   authGoogle: (idToken: string) => Promise<void>;
   fetchUser: () => Promise<boolean>;
   prevImage: string | null;
   setPrevImage: (value: string | null) => void;
+  profileViewRole: 'pasajero' | 'conductor';
+  setProfileViewRole: (role: 'pasajero' | 'conductor') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [prevImage, setPrevImage] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const [profileViewRole, setProfileViewRole] = useState<'pasajero' | 'conductor'>('pasajero');
 
   const hasRun = useRef(false);
 
@@ -139,7 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializeAuth();
   }, []);
   
-  const login = async (data: LoginFormData & { recaptchaToken?: string }) => {
+  const login = async (data: LoginData & { recaptchaToken?: string }) => {
     setLoading(true);
     try {
       const result = await loginUser(data);
@@ -228,7 +232,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     authGoogle,
     fetchUser,
     prevImage,
-    setPrevImage
+    setPrevImage,
+    profileViewRole,
+    setProfileViewRole
   };
 
   return (

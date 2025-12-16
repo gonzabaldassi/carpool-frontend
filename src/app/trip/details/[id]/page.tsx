@@ -1,4 +1,5 @@
-import TripDetails from "@/components/tripDetails/tripDetails";
+import TripDetails from "@/modules/trip-details/components/tripDetails";
+
 
 export default function TripDetailsPage(){
     return(

@@ -1,7 +1,8 @@
 'use client';
-import { AppHeader } from '@/components/navigation/mobile/AppHeader';
-import MobileNavbar from '@/components/navigation/mobile/MobileNavbar';
-import {  HEADER_PATHS } from '@/constants/publicPaths';
+
+import {  HEADER_PATHS } from '@/constants/headerPaths';
+import { AppHeader } from '@/widgets/AppHeader';
+import MobileNavbar from '@/widgets/mobile/MobileNavbar';
 import { usePathname } from 'next/navigation';
 
 export default function MobileLayout({ children }: { children: React.ReactNode }) {
@@ -13,11 +14,11 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
   const isLogoHeader = logoHeaderPaths.some(route => pathname.startsWith(route));
   
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[100dvh] overflow-hidden">
       {showHeader && (
         <AppHeader showBack={!isLogoHeader} variant={isLogoHeader ? "logo" : "default"} />
       )}
-      <main className="flex-1 overflow-auto pt-8 pr-8 pl-8 pb-[80px]">
+      <main className="flex-1 overflow-y-auto px-8 pt-4 pb-[48px]">
         {children}
       </main>
       <MobileNavbar />

@@ -1,4 +1,4 @@
-import { SecurityOptions } from "@/components/settings/SecurityOptions";
+import { SecurityOptions } from "@/modules/settings/components/options/SecurityOptions";
 
 
 export default function SettingsPage() {

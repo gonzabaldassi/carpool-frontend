@@ -1,9 +1,10 @@
 "use client"
 
-import { VehicleUpdateForm } from "@/components/vehicle/VehicleUpdateForm";
-import { getVehicleById } from "@/services/vehicleService";
-import { VehicleResponse } from "@/types/response/vehicle";
-import { Vehicle } from "@/types/vehicle";
+
+import { Vehicle } from "@/models/vehicle";
+import { VehicleUpdateForm } from "@/modules/vehicle/components/update-vehicle/VehicleUpdateForm";
+import { VehicleResponseDTO } from "@/modules/vehicle/types/dto/vehicleResponseDTO";
+import { getVehicleById } from "@/services/vehicle/vehicleService";
 import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation"; 
 import { useEffect, useState } from "react";
@@ -21,7 +22,7 @@ export default function VehicleEditPage(){
 
         const fetchVehicle = async () => {
             try {
-                const response: VehicleResponse = await getVehicleById(Number(id));
+                const response: VehicleResponseDTO = await getVehicleById(Number(id));
                 if (response.state === "ERROR" || !response.data) {
                     setError(response.messages?.[0] || "Error al obtener los datos del vehículo");
                     return;

@@ -1,7 +1,9 @@
-import { fetchWithRefresh } from "@/lib/http/authInterceptor";
-import { UserResponse } from "@/types/response/user";
-import { parseJwt } from "@/utils/jwt";
+
+import { fetchWithRefresh } from "@/shared/lib/http/authInterceptor";
 import { NextRequest, NextResponse } from "next/server";
+
+import { parseJwt } from "@/shared/utils/jwt";
+import { TokensResponse } from "@/shared/types/response";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -31,7 +33,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body), 
     });
 
-    const response: UserResponse = await res.json();
+    const response: TokensResponse = await res.json();
 
     const newAccessToken = response.data?.accessToken;
     const newRefreshToken = response.data?.refreshToken;

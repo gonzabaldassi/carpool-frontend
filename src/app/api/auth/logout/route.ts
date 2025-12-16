@@ -1,4 +1,4 @@
-import { VoidResponse } from '@/types/response/response';
+import { VoidResponse } from '@/shared/types/response';
 import { NextRequest, NextResponse } from 'next/server'
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;

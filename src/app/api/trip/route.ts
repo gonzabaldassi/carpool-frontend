@@ -1,9 +1,8 @@
-import { VoidResponse } from "@/types/response/response";
-import { TripDriverResponse } from "@/types/response/tripDriverResponseDTO";
+import { TripDriverResponse } from "@/modules/driver-trips/types/dto/tripDriverResponseDTO";
+import { VoidResponse } from "@/shared/types/response";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
 
 /**
  * Obtiene los viajes del chofer autenticado.

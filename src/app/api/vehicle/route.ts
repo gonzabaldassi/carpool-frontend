@@ -1,5 +1,5 @@
-import { VoidResponse } from "@/types/response/response";
-import { VehicleResponse } from "@/types/response/vehicle";
+import { VoidResponse } from "@/shared/types/response";
+import { VehicleResponseDTO } from "@/modules/vehicle/types/dto/vehicleResponseDTO";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const response: VehicleResponse = await res.json();
+    const response: VehicleResponseDTO = await res.json();
 
     if (!res.ok || response.state === "ERROR") {
       const messages =

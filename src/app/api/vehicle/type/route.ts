@@ -1,4 +1,4 @@
-import { VehicleTypeResponse } from "@/types/response/vehicleType";
+import { VehicleTypeResponseDTO } from "@/modules/vehicle/types/dto/vehicleTypeResponseDTO";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const response: VehicleTypeResponse = await res.json();
+    const response: VehicleTypeResponseDTO = await res.json();
 
     if (!res.ok || response.state === "ERROR") {
       const messages =

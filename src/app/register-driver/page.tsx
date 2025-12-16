@@ -1,8 +1,8 @@
-import { DriverForm } from "@/components/driver/DriverForm";
+import { DriverForm } from "@/modules/driver/components/DriverForm";
 
 export default function RegisterDriverPage() {
   return (
-    <main className="p-8 flex justify-center h-screen">
+    <main className="p-8 flex justify-center">
         <div className="flex flex-col items-start w-full max-w-lg space-y-6">
           <div className="flex flex-col items-start w-full space-y-2">
             <h1 className="text-lg font-semibold">Completa tu perfil de conductor</h1>

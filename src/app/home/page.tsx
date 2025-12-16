@@ -1,5 +1,5 @@
-import Feed from "@/components/feed/Feed";
-import SearchBar from "@/components/feed/SearchBar";
+import Feed from "@/modules/feed/components/Feed";
+import SearchBar from "@/modules/feed/components/SearchBar";
 
 export default function HomePage() {
   return (

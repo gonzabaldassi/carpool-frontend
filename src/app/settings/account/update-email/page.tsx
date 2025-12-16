@@ -1,6 +1,4 @@
-
-import UpdateEmailForm from "@/components/settings/UpdateEmailForm";
-
+import UpdateEmailForm from "@/modules/settings/components/account/UpdateEmailForm";
 
 export default function UpdateEmailPage() {
   return(

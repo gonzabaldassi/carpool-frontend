@@ -1,6 +1,7 @@
-import { GoogleLoginResponse } from "@/types/response/auth";
+
 import { NextRequest, NextResponse } from "next/server";
-import { parseJwt } from "@/utils/jwt";
+import { parseJwt } from "@/shared/utils/jwt";
+import { GoogleLoginResponse } from "@/modules/auth/types/dto/googleAuthResponseDTO";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 

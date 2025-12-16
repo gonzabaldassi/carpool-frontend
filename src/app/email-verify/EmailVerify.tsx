@@ -1,5 +1,5 @@
 'use client'
-import MailForm from "@/components/mail/MailForm";
+import MailForm from "@/modules/mail/components/MailForm";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 

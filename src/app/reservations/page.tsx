@@ -1,4 +1,5 @@
-import MyTrips from "@/components/my-trips/MyTrips";
+import MyTrips from "@/modules/driver-trips/components/MyTrips";
+
 
 export default function MyTripsPage() {
     return(

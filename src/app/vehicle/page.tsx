@@ -1,4 +1,5 @@
-import { VehicleList } from "@/components/vehicle/VehicleList";
+
+import { VehicleList } from "@/modules/vehicle/components/VehicleList";
 import Link from "next/link";
 
 export default function VehiclePage(){
@@ -6,8 +7,8 @@ export default function VehiclePage(){
         <div className="max-w-lg mx-auto md:py-8">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold">
-                Mis vehículos
-                </h1>
+                Mis vehículos   
+                </h1>   
             </div>
             
             <VehicleList />

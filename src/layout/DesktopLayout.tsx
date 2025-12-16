@@ -1,8 +1,9 @@
 'use client'
 
-import DesktopSidebar from "@/components/navigation/desktop/DesktopSidebar";
-import { AppHeader } from "@/components/navigation/mobile/AppHeader";
-import { HEADER_PATHS } from "@/constants/publicPaths";
+
+import { HEADER_PATHS } from "@/constants/headerPaths";
+import { AppHeader } from "@/widgets/AppHeader";
+import DesktopSidebar from "@/widgets/desktop/DesktopSidebar";
 import { usePathname } from "next/navigation";
 
 export default function DesktopLayout({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,5 @@
-import { TripResponse } from "@/types/response/trip";
+
+import { TripResponseDTO } from "@/modules/trip/types/dto/tripResponseDTO";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -28,7 +29,7 @@ export async function GET(
       },
     });
 
-    const response: TripResponse = await res.json();
+    const response: TripResponseDTO = await res.json();
 
     if (!res.ok || response.state === "ERROR") {
       const messages =

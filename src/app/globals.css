@@ -117,6 +117,13 @@ body {
   font-family: var(--font-outfit);
 }
 
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* ======= Clases utilitarias personalizadas ======= */
 .font-outfit {
   font-family: var(--font-outfit);

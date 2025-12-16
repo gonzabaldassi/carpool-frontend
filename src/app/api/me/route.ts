@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { parseJwt } from "@/utils/jwt";
+import { parseJwt } from "@/shared/utils/jwt";
 
 type Authority = { authority: string };
 

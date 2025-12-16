@@ -1,4 +1,4 @@
-import { CompleteRegResponse } from "@/types/response/auth";
+import { VoidResponse } from "@/shared/types/response";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ email, ...rest }),
     });
 
-    const response: CompleteRegResponse = await res.json();
+    const response: VoidResponse = await res.json();
 
     // Devolver respuesta estandarizada
     return NextResponse.json(response, { status: res.status });

@@ -1,4 +1,4 @@
-import { MediaResponse } from "@/types/response/media";
+import { MediaResponse } from "@/shared/types/response";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;

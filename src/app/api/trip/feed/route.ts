@@ -1,4 +1,5 @@
-import { SearchResponse } from "@/types/response/trip";
+
+import { SearchTripResponse } from "@/modules/search/types/dto/searchTripResponseDTO";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const response: SearchResponse = await res.json();
+    const response: SearchTripResponse = await res.json();
 
     if (!res.ok || response.state === "ERROR") {
       const messages =

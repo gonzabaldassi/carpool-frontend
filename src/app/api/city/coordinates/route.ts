@@ -1,5 +1,5 @@
-import { fetchWithRefresh } from "@/lib/http/authInterceptor";
-import { CityResponse } from "@/types/response/city";
+import { fetchWithRefresh } from "@/shared/lib/http/authInterceptor";
+import { CityResponseDTO } from "@/modules/city/types/dto/CityResponseDTO";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    const response: CityResponse = await res.json();
+    const response: CityResponseDTO = await res.json();
 
     return NextResponse.json(response, { status: res.status });
   } catch (error: unknown) {

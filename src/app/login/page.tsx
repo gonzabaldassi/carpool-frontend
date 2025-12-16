@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/auth/LoginForm";
+import { LoginForm } from "@/modules/auth/components/LoginForm";
 import { R2_PUBLIC_PREFIX } from "@/constants/imagesR2";
 import Image from "next/image";
 

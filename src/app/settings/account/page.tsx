@@ -1,4 +1,5 @@
-import { AccountOptions } from "@/components/settings/AccountOptions";
+import { AccountOptions } from "@/modules/settings/components/options/AccountOptions";
+
 
 export default function AccountPage() {
   return(

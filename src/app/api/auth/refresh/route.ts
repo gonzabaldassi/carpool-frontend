@@ -1,5 +1,7 @@
-import { RefreshResponse } from '@/types/response/auth';
-import { parseJwt } from '@/utils/jwt';
+
+import { RefreshResponse } from '@/modules/auth/types/dto/refreshResponseDTO';
+import { parseJwt } from '@/shared/utils/jwt';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
       return errorRes;
     }
 
-    const response: RefreshResponse= await res.json();
+    const response: RefreshResponse = await res.json();
 
     if (!response.data?.accessToken || !response.data?.refreshToken) {
       return NextResponse.json({ 

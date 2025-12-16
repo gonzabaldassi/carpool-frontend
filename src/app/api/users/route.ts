@@ -1,5 +1,5 @@
-import { VoidResponse } from "@/types/response/response";
-import { UserDetailsResponse } from "@/types/response/user";
+import { UserDetailsResponseDTO } from "@/modules/profile/types/dto/userDetailsResponseDTO";
+import { VoidResponse } from "@/shared/types/response";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const response: UserDetailsResponse = await res.json();
+    const response: UserDetailsResponseDTO = await res.json();
 
     // Devolver respuesta estandarizada
     return NextResponse.json(response, { status: res.status });

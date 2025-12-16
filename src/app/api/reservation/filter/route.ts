@@ -1,4 +1,5 @@
-import { ReservationResponse } from "@/types/response/reservationResponseDTO";
+
+import { ReservationResponse } from "@/modules/reservation/create/types/dto/reservationResponseDTO";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;

@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle, Info } from 'lucide-react'
+import { useEffect, useRef } from 'react';
 
 export function Alert({
   type = 'error',
@@ -9,6 +10,14 @@ export function Alert({
   message: string;
   children?: React.ReactNode;
 }) {
+
+  const alertRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (alertRef.current) {
+      alertRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
   const iconMap = {
     error: <AlertCircle className="text-error w-5 h-5" />,
     success: <CheckCircle className="text-success w-5 h-5" />,
@@ -22,7 +31,7 @@ export function Alert({
   };
 
   return (
-    <div className={`flex items-start gap-3 p-3 rounded-md text-sm ${bgMap[type]}`}>
+    <div ref={alertRef} className={`flex items-start gap-3 p-3 rounded-md text-sm ${bgMap[type]}`}>
       {iconMap[type]}
       <div className="flex flex-col items-start">
         <span className="text-dark-2 dark:text-white">{message}</span>

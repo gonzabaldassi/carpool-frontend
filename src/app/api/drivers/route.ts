@@ -1,5 +1,6 @@
-import { fetchWithRefresh } from "@/lib/http/authInterceptor";
-import { DriverResponse } from "@/types/response/driver";
+import { fetchWithRefresh } from "@/shared/lib/http/authInterceptor";
+import { DriverResponse } from "@/modules/driver/types/dto/driverResponseDTO";
+
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;

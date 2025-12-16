@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import DesktopLayout from './DesktopLayout';
 import MobileLayout from './MobileLayout';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -17,9 +18,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return isDesktop ? (
-    <DesktopLayout>{children}</DesktopLayout>
-  ) : (
-    <MobileLayout>{children}</MobileLayout>
-  );
+  return <TooltipProvider>
+      {isDesktop ? (
+        <DesktopLayout>{children}</DesktopLayout>
+      ) : (
+        <MobileLayout>{children}</MobileLayout>
+      )}
+    </TooltipProvider>
 }

@@ -1,7 +1,7 @@
 'use client'
 
-import PasswordForm from "@/components/password/PasswordForm";
-import { unlockAccount } from "@/services/userService";
+import PasswordForm from "@/modules/password/components/PasswordForm";
+import { unlockAccount } from "@/services/user/userService";
 
 export default function UnlockAccountPage(){
     return (

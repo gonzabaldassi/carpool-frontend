@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;

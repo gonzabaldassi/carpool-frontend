@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CompleteRegistrationForm } from "@/components/auth/CompleteRegistrationForm";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { CompleteRegistrationForm } from "@/modules/auth/components/CompleteRegistrationForm";
 
 type Props = {
   queryEmail: string;

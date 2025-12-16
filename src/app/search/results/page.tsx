@@ -1,4 +1,4 @@
-import Results from "@/components/search/Results";
+import Results from "@/modules/search/components/Results";
 import { Suspense } from "react";
 
 

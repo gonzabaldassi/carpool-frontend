@@ -1,4 +1,4 @@
-import { SettingsOptions } from "@/components/settings/SettingsOptions";
+import { SettingsOptions } from "@/modules/settings/components/options/SettingsOptions";
 
 export default function SettingsPage() {
   return(

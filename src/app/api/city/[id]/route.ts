@@ -1,4 +1,5 @@
-import { CityResponse } from "@/types/response/city";
+
+import { CityResponseDTO } from "@/modules/city/types/dto/CityResponseDTO";
 import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -18,7 +19,7 @@ export async function GET(
       },
     });
 
-    const response: CityResponse = await res.json();
+    const response: CityResponseDTO = await res.json();
 
     if (!res.ok || response.state === "ERROR") {
       const messages =

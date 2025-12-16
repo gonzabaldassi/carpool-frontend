@@ -1,7 +1,9 @@
 'use client'
-import PasswordForm from "@/components/password/PasswordForm";
-import { ResetPasswordData } from "@/schemas/password/passwordSchema";
-import { resetPassword } from "@/services/userService";
+
+
+import PasswordForm from "@/modules/password/components/PasswordForm";
+import { ResetPasswordData } from "@/modules/password/schemas/resetPasswordSchema";
+import { resetPassword } from "@/services/user/userService";
 
 export default function PasswordChangePage() {
   const handleResetPassword = async (data: ResetPasswordData) => {

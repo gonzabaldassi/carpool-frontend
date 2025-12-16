@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { LoginResponse } from "@/types/response/auth";
-import { parseJwt } from "@/utils/jwt";
+
+import { parseJwt } from "@/shared/utils/jwt";
+import { LoginResponse } from "@/modules/auth/types/dto/loginResponseDTO";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 

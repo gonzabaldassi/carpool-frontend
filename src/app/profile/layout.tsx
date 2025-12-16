@@ -1,6 +1,7 @@
 'use client';
 
-import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
+
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
 

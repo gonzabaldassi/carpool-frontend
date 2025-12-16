@@ -1,5 +1,6 @@
-import HomeButtons from "@/components/home/HomeButtons";
+
 import { R2_PUBLIC_PREFIX } from "@/constants/imagesR2";
+import HomeButtons from "@/modules/home/components/HomeButtons";
 import Image from "next/image";
 
 export default function Page() {

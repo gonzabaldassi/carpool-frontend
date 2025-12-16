@@ -1,7 +1,7 @@
 'use client'
 
-import MailForm from "@/components/mail/MailForm"
-import { updateEmail } from "@/services/userService";
+import MailForm from "@/modules/mail/components/MailForm"
+import { updateEmail } from "@/services/user/userService";
 import { useSearchParams } from "next/navigation"
 
 export default function EmailChangePage() {
