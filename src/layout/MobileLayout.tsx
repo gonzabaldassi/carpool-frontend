@@ -18,7 +18,7 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
       {showHeader && (
         <AppHeader showBack={!isLogoHeader} variant={isLogoHeader ? "logo" : "default"} />
       )}
-      <main className="flex-1 overflow-y-auto px-8 pt-4 pb-[48px]">
+      <main className="flex-1 overflow-y-auto px-8 pt-4 pb-[80px]">
         {children}
       </main>
       <MobileNavbar />
