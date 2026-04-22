@@ -24,13 +24,14 @@ export default function Feed() {
   useEffect(() => {
 
     const initNotifications = async () => {
+
       if (typeof window === "undefined" || !("Notification" in window)) return;
+
       try {
         // Pedir permiso usando el hook
         if (Notification.permission === 'default') {
           await requestPermission();
         }
-
       } catch (error) {
         console.warn('No se pudieron registrar las notificaciones:', error);
       }

@@ -84,7 +84,10 @@ export function useNotifications(): UseNotificationsReturn {
     }
 
     const result = await Notification.requestPermission();
+    console.log("ANTES DEL ENTRAR AL IF: ", result);
+
     if (result === 'granted') {
+      console.log("ESTA ENTRANDO AL IF");
       await registerNotifications();
     }
     
