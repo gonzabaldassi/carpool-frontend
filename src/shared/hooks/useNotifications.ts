@@ -17,23 +17,23 @@ export function useNotifications(): UseNotificationsReturn {
   useEffect(() => {
     onMessageListener((payload) => {
       if (document.visibilityState !== 'visible') return;
-      
+
       const title = payload.notification?.title || payload.data?.title;
       const body = payload.notification?.body || payload.data?.body;
 
       if (!title) return;
 
-      new Notification(title, {
-        body: body ?? '',
-        icon: '/icons/icon-192.png',
-        badge: '/badge-72.svg',
-        data: payload.data,
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (!reg) return;
+
+        reg.showNotification(title, {
+          body: body ?? '',
+          icon: '/icons/icon-192.png',
+          badge: '/icons/icon-192.png',
+          data: payload.data,
+        });
       });
     });
-    
-    return () => {
-
-    };
   }, []);
 
   const registerNotifications = useCallback(async () => {
