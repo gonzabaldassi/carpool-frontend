@@ -1,6 +1,5 @@
 'use client'
-
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import TripList from "./TripList";
 import { getInitialFeed } from "@/services/trip/tripService";
 import TripSkeleton from "./TripSkeleton";
@@ -9,26 +8,28 @@ import { useGeocode } from "../hooks/useGeocode";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 import { City } from "@/models/city";
 import { SearchData } from "@/modules/search/types/search";
-
-
+import { Toast } from "@/components/ux/Toast";
 
 export default function Feed() {
-  const {user} = useAuth()
-  const { city,detectUserCity } = useGeocode();
+  const { user } = useAuth()
+  const { city, detectUserCity } = useGeocode();
   const { requestPermission } = useNotifications();
   const [currentCity, setCurrentCity] = useState<City | null>(null);
   const [feed, setFeed] = useState<SearchData[] | null>(null);
-  const [loading, setLoading] = useState(true); 
-  const feedFetchRef = useRef(false);
-
+  const [loading, setLoading] = useState(true);
+  const LIMIT = 10;
+  const skipRef = useRef(0);
+  const hasMoreRef = useRef(true);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null);
+  const loadingRef = useRef(false);
+  
   useEffect(() => {
-
     const initNotifications = async () => {
 
       if (typeof window === "undefined" || !("Notification" in window)) return;
 
       try {
-        // Pedir permiso usando el hook
         if (Notification.permission === 'default') {
           await requestPermission();
         }
@@ -40,48 +41,88 @@ export default function Feed() {
   }, [requestPermission]);
 
   useEffect(() => {
-    if(!user) return;
+    if (!user) return;
     detectUserCity();
   }, [user]);
 
   useEffect(() => {
-    if (!city) return; // Espera a que city esté disponible
-    if (feedFetchRef.current) return;
-
-    feedFetchRef.current = true; // Marca como ejecutado
-
-    const fetchFeed = async () => {
-      try {
-        setCurrentCity(city);
-        const responseFeed = await getInitialFeed(city.id);
-        if (responseFeed.state === "OK" && responseFeed.data) {
-          setFeed(responseFeed.data);
-        }
-      } catch (err) {
-        console.error("Error cargando feed:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeed();
+    if (!city) return;
+    setCurrentCity(city);
+    loadFeed(true);
   }, [city]);
 
+  const loadFeed = useCallback(async (reset = false) => {
+    try{
+      if (!hasMoreRef.current && !reset) return;
+      loadingRef.current = true;
+      setLoading(true);
+  
+      const currentSkip = reset ? 0 : skipRef.current;
+      if (reset) {
+        skipRef.current = 0;
+        hasMoreRef.current = true;
+      }
+  
+      const response = await getInitialFeed(currentSkip, city?.id);
+      const newTrips = response.data ?? [];
+  
+      if (reset) {
+        setFeed(newTrips);
+      } else {
+        setFeed(prev => [...(prev ?? []), ...newTrips]);
+      }
+  
+      if (newTrips.length < LIMIT) {
+        hasMoreRef.current = false;
+      } else {
+        skipRef.current += LIMIT;
+      }
+    }catch(error:unknown){
+      hasMoreRef.current = false;
+      if (error instanceof Error) {
+        setToast({message: error.message, type: 'error'})
+      } else {
+        setToast({message: 'Ocurrió un error inesperado', type: 'error'})
+      }
+    }finally{
+      loadingRef.current = false;
+      setLoading(false);
+    }
 
-  if (loading) {
-    return (
-      <div className="w-full">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <TripSkeleton key={i} />
-        ))}
-      </div>
-    );
-  }
+  }, [city]);
 
+  useEffect(() => {
+    if (!loaderRef.current) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !loadingRef.current && hasMoreRef.current) {
+        loadFeed();
+      }
+    });
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [loadFeed]);
 
   return (
     <div className="w-full">
-      <TripList feed={feed ?? []} currentCity={currentCity?.name}/>
+      <TripList feed={feed ?? []} currentCity={currentCity?.name} loading={loading} />
+
+      {feed === null && loading &&
+        Array.from({ length: 3 }).map((_, i) => (
+          <TripSkeleton key={i} />
+        ))
+      }
+
+      {feed !== null && feed.length > 0 && loading && <TripSkeleton />}
+
+      <div ref={loaderRef} className="h-1" />
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

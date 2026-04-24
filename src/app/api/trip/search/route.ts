@@ -7,15 +7,19 @@ export async function POST(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
     const body = await req.json();
+    const { searchParams } = new URL(req.url);
+    const skip = searchParams.get("skip");
 
-    if (!body) {
+    if (!body || !skip) {
       return NextResponse.json(
-        { data: null, messages:'Filtros inválidos', state: "ERROR" },
+        { data: null, messages:'Faltan parametros', state: "ERROR" },
         { status: 400} 
       );
     }
+    const params = new URLSearchParams();
+    params.append("skip", skip);
    
-    const res = await fetch(`${apiUrl}/trip/search`, {
+    const res = await fetch(`${apiUrl}/trip/search?${params.toString()}`, {
         method:'POST',
         headers: {
         Authorization: `Bearer ${token}`,

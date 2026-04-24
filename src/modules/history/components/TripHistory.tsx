@@ -4,7 +4,7 @@ import { Toast } from "@/components/ux/Toast";
 import { TripDriverDTO } from "@/modules/driver-trips/types/tripDriver";
 import { getHistoryTripUser, getMyTrips } from "@/services/trip/tripService";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TripHistoryUserDTO } from "../types/TripHistoryUserDTO";
 import { TripDriverList } from "./driver/TripDriverList";
 import { TripPassengerList } from "./passenger/TripPassengerList";
@@ -21,8 +21,14 @@ export default function TripHistory() {
 
   const [passengerTrips, setPassengerTrips]=useState<TripHistoryUserDTO[]>([])
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [initialLoading, setInitialLoading] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'success' } | null>(null);
+
+  const skipRef = useRef(0);
+  const hasMoreRef = useRef(true);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+  const LIMIT = 10;
 
   const handleChangeRole = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -31,41 +37,88 @@ export default function TripHistory() {
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const fetchTrips = async () => {
-    setLoading(true);
+  const fetchTrips = useCallback(async (reset = false) => {
+    if (!hasMoreRef.current && !reset) return;
+    
     try {
-      if (role==='driver'){
-        const response = await getMyTrips(["CREATED", "CLOSED", "FINISHED"]);
-        if(response.state === 'OK') {
-          setDriverTrips(response.data?.trips ?? [])
-          
-        }else{
-          setToast({ message: response.messages[0] ?? 'No se han podido recuperar los viajes del chofer.', type: 'error' })
-          setDriverTrips([])
+      if (reset) {
+        setInitialLoading(true); 
+      } else {
+        setLoadingMore(true);
+      }
+      const currentSkip = reset ? 0 : skipRef.current;
+      if (reset) {
+        skipRef.current = 0;
+        hasMoreRef.current = true;
+      }
+      if (role === 'driver') {
+        const response = await getMyTrips(currentSkip, ["CREATED", "CLOSED", "FINISHED"]);
+        if (response.state === 'OK') {
+          const newTrips = response.data?.trips ?? [];
+          if (reset) {
+            setDriverTrips(newTrips);
+          } else {
+            setDriverTrips(prev => [...prev, ...newTrips]);
+          }
+          if (newTrips.length < LIMIT) {
+            hasMoreRef.current = false;
+          } else {
+            skipRef.current = currentSkip + LIMIT;
+          }
+        } else {
+          hasMoreRef.current = false;
+          setToast({ message: response.messages[0] ?? 'No se han podido recuperar los viajes del chofer.', type: 'error' });
+          if (reset) setDriverTrips([]);
         }
       }
-      if(role==='passenger'){
-        const response = await getHistoryTripUser(0,["FINISHED"]);
-        if(response.state === 'OK'){
-          setPassengerTrips(response.data?.trips ?? [])
-        }else{
-          setToast({ message: response.messages[0] ?? 'No se han podido recuperar los viajes del pasajero.', type: 'error' })
-          setPassengerTrips([])
+
+      if (role === 'passenger') {
+        const response = await getHistoryTripUser(currentSkip, ["COMPLETED"]);
+        if (response.state === 'OK') {
+          const newTrips = response.data?.trips ?? [];
+          if (reset) {
+            setPassengerTrips(newTrips);
+          } else {
+            setPassengerTrips(prev => [...prev, ...newTrips]);
+          }
+          if (newTrips.length < LIMIT) {
+            hasMoreRef.current = false;
+          } else {
+            skipRef.current = currentSkip + LIMIT;
+          }
+        } else {
+          hasMoreRef.current = false;
+          setToast({ message: response.messages[0] ?? 'No se han podido recuperar los viajes del pasajero.', type: 'error' });
+          if (reset) setPassengerTrips([]);
         }
       }
     } catch (error) {
+      hasMoreRef.current = false;
       const message = error instanceof Error ? error.message : "Error desconocido";
       setToast({ message, type: 'error' })
       console.error('Error al obtener viajes:', error);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setLoadingMore(false);
     }
-  }
+  },[role])
 
   useEffect(() => {
-    fetchTrips();
-  }, [role])
+    setDriverTrips([]);
+    setPassengerTrips([]);
+    fetchTrips(true);
+  }, [role]);
   
+  useEffect(() => {
+    if (!loaderRef.current) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !loadingMore && !initialLoading && hasMoreRef.current) {
+        fetchTrips();
+      }
+    });
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [fetchTrips, loadingMore, initialLoading]);
 
   return(
     <div className="w-full">
@@ -80,37 +133,32 @@ export default function TripHistory() {
         onChangeRole={handleChangeRole}
       />
 
-      {loading &&
-        <div className="w-full">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <TripDriverCardSkeleton key={index} />
-          ))}
-        </div>
-      }
+    {initialLoading &&
+    Array.from({ length: 3 }).map((_, index) => (
+      <TripDriverCardSkeleton key={index} />
+    ))
+    }
 
-      {role === 'driver' && !loading && (
-        <TripDriverList
-          trips={driverTrips}
-          onError={(message) =>
-            setToast({ message, type: 'error' })
-          }
-          onSuccess={(message) =>
-            setToast({ message, type: 'success' })
-          }
-        />
-      )}
+  {role === 'driver' && !initialLoading && (
+    <TripDriverList
+      trips={driverTrips}
+      onError={(message) => setToast({ message, type: 'error' })}
+      onSuccess={(message) => setToast({ message, type: 'success' })}
+    />
+  )}
 
-      {role === 'passenger' && !loading && (
-        <TripPassengerList
-          trips={passengerTrips}
-          onError={(message) =>
-            setToast({ message, type: 'error' })
-          }
-          onSuccess={(message) =>
-            setToast({ message, type: 'success' })
-          }
-        />
-      )}
+  {role === 'passenger' && !initialLoading && (
+    <TripPassengerList
+      trips={passengerTrips}
+      onError={(message) => setToast({ message, type: 'error' })}
+      onSuccess={(message) => setToast({ message, type: 'success' })}
+    />
+  )}
+
+  {/* Skeleton al cargar más — abajo, junto al loader */}
+  {loadingMore && <TripDriverCardSkeleton />}
+
+  <div ref={loaderRef} className="h-1" />
 
     {toast && (
       <Toast

@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getFCMToken, onMessageListener } from '../lib/firebase/firebase';
+import { getFCMToken, getMessagingInstance, onMessageListener } from '../lib/firebase/firebase';
+import { deleteToken } from 'firebase/messaging';
 
 interface UseNotificationsReturn {
   isLoading: boolean;
   registerNotifications: () => Promise<void>;
+  disableNotifications: () => Promise<void>;
+  hasActiveTokens: () => Promise<boolean>;
   requestPermission: () => Promise<NotificationPermission>;
   error: string | null;
 }
@@ -77,6 +80,54 @@ export function useNotifications(): UseNotificationsReturn {
     }
   }, []);
 
+  const disableNotifications = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await fetch('/api/notification/delete', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const messaging = await getMessagingInstance();
+
+      if (messaging) {
+        await deleteToken(messaging);
+      }
+
+    } catch (error: unknown) {
+      let errorMessage = 'Error desconocido';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      setError(`Error técnico: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const hasActiveTokens = useCallback(async (): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/notification/status', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        return false;
+      }
+
+      const data = await res.json();
+
+      return data?.data === true;
+    } catch (error) {
+      console.error('Error al consultar estado de notificaciones:', error);
+      return false;
+    }
+  }, []);
 
   const requestPermission = useCallback(async (): Promise<NotificationPermission> => {
     if (typeof window === "undefined" || !('Notification' in window)) {
@@ -98,6 +149,8 @@ export function useNotifications(): UseNotificationsReturn {
     requestPermission,
     isLoading,
     registerNotifications,
+    disableNotifications,
+    hasActiveTokens,
     error,
   };
 }

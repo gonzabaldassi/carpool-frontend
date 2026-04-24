@@ -14,12 +14,13 @@ interface TripListProps {
   currentCity?: string;
   originSearch?: City | null;
   destinationSearch?: City | null;
+  loading?: boolean; 
 }
 
 const SEARCH_CONTEXT_KEY = 'carpool_search_context';
 const LOAD_SIZE = 5; // Tamaño de lote inicial y de carga
 
-export default function TripList({ feed, currentCity, originSearch, destinationSearch }: TripListProps) {
+export default function TripList({ feed, currentCity, originSearch, destinationSearch, loading }: TripListProps) {
   const router = useRouter();
   const [visibleCount, setVisibleCount] = useState(1);
   const loaderRef = useRef<HTMLDivElement | null>(null);
@@ -67,7 +68,7 @@ export default function TripList({ feed, currentCity, originSearch, destinationS
     return date.getFullYear() === new Date().getFullYear();
   }
 
-  if (feed.length === 0) {
+  if (feed.length === 0 && !loading) {
     return (
       <EmptyAlert
         icon={<MapPinOff size={32} />}

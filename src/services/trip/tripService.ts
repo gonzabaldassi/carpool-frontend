@@ -8,9 +8,12 @@ import { VoidResponse } from "@/shared/types/response";
 import { TripHistoryUserResponse } from "@/modules/history/types/dto/TripHistoryUserResponseDTO";
 import { TripPassengersResponseDTO } from "@/modules/trip-details/types/dto/tripPassengersResponseDTO";
 
-export async function getTrips(filters: TripFilters): Promise<SearchTripResponse> {
+export async function getTrips(filters: TripFilters, skip: number): Promise<SearchTripResponse> {
   try {
-    const res = await fetch('/api/trip/search',{
+    const params = new URLSearchParams();
+    params.append("skip", skip.toString());
+    
+    const res = await fetch(`/api/trip/search?${params.toString()}`,{
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -193,34 +196,38 @@ export async function verifyIfUserIsCreator(tripId: number): Promise<VerifyCreat
   }
 }
 
-export const getInitialFeed = async (cityId?: number) => {
-  try {
-    const url = cityId
-      ? `/api/trip/feed?cityId=${cityId}`
-      : `/api/trip/feed`;
+export const getInitialFeed = async (skip:number,cityId?: number) => {
+  const params = new URLSearchParams();
 
-    const res = await fetchWithRefresh(url);
-    const response: SearchTripResponse = await res.json();
+  params.append("skip", skip.toString());
 
-    if (!res.ok) {
-      throw new Error(response.messages?.[0] || "Error desconocido");
-    }
-
-    return response;
-  } catch (error: unknown) {
-    let message = "Error desconocido";
-    if (error instanceof Error) message = error.message;
-
-    return { data: null, messages: [message], state: "ERROR" };
+  if (cityId) {
+    params.append("cityId", cityId.toString());
   }
+
+  const res = await fetchWithRefresh(`/api/trip/feed?${params.toString()}`);
+  const response: SearchTripResponse = await res.json();
+
+  if (!res.ok) {
+    throw new Error(response.messages?.[0] || "Error desconocido");
+  }
+
+  return response;
+  
 };
 
 
-export const getMyTrips = async (states?: string[]) => {
+export const getMyTrips = async (skip: number,states?: string[]) => {
   try {
-    const query = states?.length
-      ? `?states=${states.join(',')}`
-      : '';
+    const params = new URLSearchParams();
+
+    params.append('skip', skip.toString());
+
+    if (states?.length) {
+      params.append('states', states.join(','));
+    }
+
+    const query = `?${params.toString()}`;
 
     const res = await fetchWithRefresh(`/api/trip${query}`, {
       method: 'GET',

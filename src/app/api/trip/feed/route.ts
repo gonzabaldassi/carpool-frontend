@@ -8,14 +8,23 @@ export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
     const { searchParams } = new URL(req.url);
-    const cityId = searchParams.get("cityId"); // puede ser null
 
-    // Construimos la URL dinámica
-    const url = cityId
-      ? `${apiUrl}/trip/feed?cityId=${Number(cityId)}`
-      : `${apiUrl}/trip/feed`; // ← sin cityId => backend usa ciudad por defecto
+    const cityId = searchParams.get("cityId");
+    const skip = searchParams.get("skip");
 
-    const res = await fetch(url, {
+    if (!skip) {
+      return NextResponse.json(
+        { data: null, messages: ["Falta skip"], state: "ERROR" },
+        { status: 400 }
+      );
+    }
+
+    const params = new URLSearchParams();
+    params.append("skip", skip);
+
+    if (cityId) params.append("cityId", cityId);
+
+    const res = await fetch(`${apiUrl}/trip/feed?${params.toString()}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

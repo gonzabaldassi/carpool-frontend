@@ -17,13 +17,20 @@ export async function GET(req: NextRequest) {
     
     const { searchParams } = new URL(req.url);
     const statesParam = searchParams.get('states');
+    const skipParam = searchParams.get('skip');
+    const params = new URLSearchParams();
 
-    const query = statesParam
-      ? `?${statesParam
-          .split(',')
-          .map(state => `tripState=${state}`)
-          .join('&')}`
-      : '';
+    if (skipParam) {
+      params.append('skip', skipParam);
+    }
+
+    if (statesParam) {
+      statesParam.split(',').forEach(state => {
+        params.append('tripState', state);
+      });
+    }
+
+    const query = params.toString() ? `?${params.toString()}` : '';
 
     const res = await fetch(`${apiUrl}/trip${query}`, {
       headers: { 

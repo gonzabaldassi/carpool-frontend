@@ -80,3 +80,10 @@ export const onMessageListener = (
     }
   });
 };
+
+export const getMessagingInstance = async () => {
+  const supported = await isSupported();
+  if (!supported || typeof window === 'undefined') return null;
+
+  return getMessaging(app);
+};

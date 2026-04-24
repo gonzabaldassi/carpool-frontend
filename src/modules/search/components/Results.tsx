@@ -3,7 +3,7 @@
 import { fetchCityById } from "@/services/city/cityService";
 import { getTrips } from "@/services/trip/tripService";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import TripSkeleton from "@/modules/feed/components/TripSkeleton";
 import CitySearch from "./CitySearch";
 import FilterBar from "./FilterBar";
@@ -11,10 +11,13 @@ import { SearchData } from "../types/search";
 import { TripFilters } from "@/models/trip";
 import { City } from "@/models/city";
 import TripList from "@/modules/feed/components/TripList";
+import { Toast } from "@/components/ux/Toast";
 
 export default function Results() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null);
+
 
   // Inicializamos desde URL
   const originParam = searchParams.get("origin");
@@ -43,11 +46,26 @@ export default function Results() {
     : 10000;
   const [orderByDriverRating, setOrderByDriverRating] = useState(orderByRatingParam === "true");
 
-  const fetchTrips = useCallback(async () => {
+  const LIMIT = 10;
+  const skipRef = useRef(0);
+  const hasMoreRef = useRef(true);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+  const loadingRef = useRef(false);
+  
+  const fetchTrips = useCallback(async (reset = false) => {
     if (!originCityId || !destinationCityId) return;
+    if (!hasMoreRef.current && !reset) return;
 
-    setLoading(true);
     try {
+      loadingRef.current = true;
+      setLoading(true)
+
+      const currentSkip = reset ? 0 : skipRef.current;
+      if (reset) {
+        skipRef.current = 0;
+        hasMoreRef.current = true;
+      }
+
       const filters: TripFilters = {
         originCityId,
         destinationCityId,
@@ -57,22 +75,39 @@ export default function Results() {
       if (maxPrice !== undefined) filters.maxPrice = maxPrice;
       if (orderByDriverRating) filters.orderByDriverRating = orderByDriverRating;
 
-      const res = await getTrips(filters);
-      const responseOriginCity = await fetchCityById(originCityId);
-      const responseDestinationCity = await fetchCityById(destinationCityId);
+      const res = await getTrips(filters, currentSkip);
 
-      setOriginCity(responseOriginCity.data);
-      setDestinationCity(responseDestinationCity.data);
-
-      if (res.state === "OK" && res.data) {
-        setFeed(res.data);
-      } else {
-        setFeed([]);
+      if (reset) {
+        const responseOriginCity = await fetchCityById(originCityId);
+        const responseDestinationCity = await fetchCityById(destinationCityId);
+        setOriginCity(responseOriginCity.data);
+        setDestinationCity(responseDestinationCity.data);
       }
+
+      const newTrips = res.data ?? [];
+
+      if (reset) {
+        setFeed(newTrips);
+      } else {
+        setFeed(prev => [...(prev ?? []), ...newTrips]);
+      }
+      if (newTrips.length < LIMIT) {
+        hasMoreRef.current = false;
+      } else {
+        skipRef.current = currentSkip + LIMIT;
+      }
+
     } catch (error) {
-      console.error("Error fetching feed:", error);
-      setFeed([]);
+      hasMoreRef.current = false;
+      if (error instanceof Error) {
+        setToast({message: error.message, type: 'error'})
+        setFeed([])
+      } else {
+        setToast({message: 'Ocurrió un error inesperado', type: 'error'})
+        setFeed([])
+      }
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   }, [
@@ -88,7 +123,8 @@ export default function Results() {
   useEffect(() => {
     if (!originCityId || !destinationCityId) return;
 
-    fetchTrips();
+    setFeed([])
+    fetchTrips(true);
 
     const queryParams = new URLSearchParams();
     queryParams.set("origin", originCityId.toString());
@@ -100,6 +136,18 @@ export default function Results() {
 
     router.replace(`/search/results?${queryParams.toString()}`);
   }, [originCityId, destinationCityId, departureDate, minPrice, maxPrice, orderByDriverRating, router, fetchTrips]);
+
+
+  useEffect(() => {
+    if (!loaderRef.current) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !loadingRef.current && hasMoreRef.current) {
+        fetchTrips();
+      }
+    });
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [fetchTrips]);
 
   // --- Limpiar filtros ---
   const clearFilters = () => {
@@ -115,39 +163,9 @@ export default function Results() {
     router.replace(`/search/results?${queryParams.toString()}`);
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-4 w-full">
-        <div className="border border-gray-2 rounded-2xl p-2 flex items-center gap-3 px-3">
-          <div className="flex flex-col items-center">
-            <div className="h-2 w-2 bg-gray-2 rounded-full animate-pulse" />
-            <div className="w-0.5 h-4 bg-gray-2 my-1 animate-pulse" />
-            <div className="h-2 w-2 bg-gray-2 rounded-full animate-pulse" />
-          </div>
-          <div className="w-full space-y-1">
-            <div className="h-4 w-32 bg-gray-2 rounded animate-pulse" />
-            <div className="w-full border-b bg-gray-2/70 my-2 animate-pulse"></div>
-            <div className="h-4 w-40 bg-gray-2 rounded animate-pulse" />
-          </div>
-        </div>
-
-        {/* Skeleton filtros*/}
-        <div className="flex items-center gap-2 animate-pulse">
-          <div className="h-5 w-1/4 bg-gray-2 rounded-lg" />
-          <div className="h-5 w-1/6 bg-gray-2 rounded-lg" />
-          <div className="h-5 w-1/6 bg-gray-2 rounded-lg" />
-        </div>
-
-        {Array.from({ length: 2 }).map((_, i) => (
-          <TripSkeleton key={i} />
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-4">
-      <div className=" flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <CitySearch
           originCity={originCityId}
           destinationCity={destinationCityId}
@@ -159,12 +177,7 @@ export default function Results() {
       <FilterBar
         selectedDate={departureDate}
         onDateChange={(date) => {
-          if (!date) {
-            // si se deselecciona, limpiar filtro
-            setDepartureDate(undefined);
-            return;
-          }
-
+          if (!date) { setDepartureDate(undefined); return; }
           const normalized = new Date(date);
           normalized.setHours(0, 0, 0, 0);
           setDepartureDate(normalized.toISOString().slice(0, 10));
@@ -179,7 +192,42 @@ export default function Results() {
         onClearFilters={clearFilters}
       />
 
-      <TripList feed={feed} originSearch={originCity} destinationSearch={destinationCity} />
+      {feed.length === 0 && loading && (
+        <>
+          <div className="border border-gray-2 rounded-2xl p-2 flex items-center gap-3 px-3">
+            <div className="flex flex-col items-center">
+              <div className="h-2 w-2 bg-gray-2 rounded-full animate-pulse" />
+              <div className="w-0.5 h-4 bg-gray-2 my-1 animate-pulse" />
+              <div className="h-2 w-2 bg-gray-2 rounded-full animate-pulse" />
+            </div>
+            <div className="w-full space-y-1">
+              <div className="h-4 w-32 bg-gray-2 rounded animate-pulse" />
+              <div className="w-full border-b bg-gray-2/70 my-2 animate-pulse"></div>
+              <div className="h-4 w-40 bg-gray-2 rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 animate-pulse">
+            <div className="h-5 w-1/4 bg-gray-2 rounded-lg" />
+            <div className="h-5 w-1/6 bg-gray-2 rounded-lg" />
+            <div className="h-5 w-1/6 bg-gray-2 rounded-lg" />
+          </div>
+          {Array.from({ length: 2 }).map((_, i) => <TripSkeleton key={i} />)}
+        </>
+      )}
+
+      <TripList feed={feed} originSearch={originCity} destinationSearch={destinationCity} loading={loading} />
+
+      {feed.length > 0 && loading && <TripSkeleton />}
+
+      <div ref={loaderRef} className="h-1" />
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
